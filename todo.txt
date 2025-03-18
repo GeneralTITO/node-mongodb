@@ -1,0 +1,60 @@
+
+
+
+
+1- add auth (staff and doctor)
+2- update staff/doctor
+3- update patient
+4- only staff can make attendance, only doctor can make appointment
+
+5- add search for user names
+
+6- add search for Attendance and Appointments for user id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4- redis
+6- websockets/socket.io
+
+
+7- mongodb/dynamoDB (non-relational database)
+8- kafta/mqhabbit
+9- kubbernets/docker
+5- prometheus + grafana(depois de docker)
+10- aws/azure
+
+
+
+
+
+
+
+
+
+
+8- nest.js
+
+9- react + redux + tailwind
+10- next.js
+
+11- .net
+12- java
+13- go
+14- ruby 
+.
