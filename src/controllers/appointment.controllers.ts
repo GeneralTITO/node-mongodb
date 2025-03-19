@@ -20,13 +20,13 @@ const read = async (req: Request, res: Response): Promise<void> => {
 };
 
 const getUserAppointments = async (req: Request, res: Response): Promise<void> => {
-  const idUser = Number(req.params.id)
+  const idUser = req.params.id;
   const appointments = await appointmentServices.getUserAppointments(idUser);
   res.status(200).json(appointments);
 };
 const readOne = async (req: Request, res: Response): Promise<void> => {
-  const appointmentId: string = req.params.id;
-  const appointment = await appointmentServices.readOne(Number(appointmentId));
+  const appointmentId = req.params.id;
+  const appointment = await appointmentServices.readOne(appointmentId);
   res.status(200).json(appointment);
 };
 

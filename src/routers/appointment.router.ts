@@ -1,15 +1,11 @@
 import { Router } from "express";
 import middlewares from "../middlewares";
-import { AppointmentCreateSchema } from "../schemas_zod";
 import { appointmentControllers } from "../controllers";
+import { AppointmentCreateSchema } from "../schemas_zod";
 
 export const appointmentRouter: Router = Router();
 
-appointmentRouter.get(
-  "/",
-  middlewares.verifyToken,
-  appointmentControllers.read
-);
+appointmentRouter.get("/", middlewares.verifyToken, appointmentControllers.read);
 appointmentRouter.get(
   "/getUserAppointments/:id",
   middlewares.verifyToken,

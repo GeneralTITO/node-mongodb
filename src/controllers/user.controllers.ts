@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import userServices from "../services/user.services";
-import { UserReturn, UserUpdate } from "../interfaces";
 import { UserReturnSchema } from "../schemas_zod";
 
 const create = async (req: Request, res: Response): Promise<void> => {
@@ -15,11 +14,11 @@ const read = async (req: Request, res: Response): Promise<void> => {
 
 const readOne = async (req: Request, res: Response): Promise<void> => {
   const userId: string = req.params.id;
-  const user = await userServices.readOne(Number(userId));
+  const user = await userServices.readOne(userId);
   res.status(200).json(user);
 };
 const update = async (req: Request, res: Response): Promise<void> => {
-  const id: number = Number(req.params.id);
+  const id = req.params.id
   const user = await userServices.update(req.body, id);
 
   const response = UserReturnSchema.parse(user);

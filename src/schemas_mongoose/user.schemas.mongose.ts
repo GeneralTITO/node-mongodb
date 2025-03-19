@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-// Enum Role
 export enum Role {
   Doctor = 'Doctor',
   Staff = 'Staff',

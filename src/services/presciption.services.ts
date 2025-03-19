@@ -1,23 +1,23 @@
-import { Prescriptions } from "@prisma/client";
-import { prisma } from "../prismaClient";
-import { PrescriptionCreate } from "../interfaces";
+import mongoose from "mongoose";
 import { AppError } from "../errors";
+import { PrescriptionCreate } from "../interfaces";
+import { User, Appointments, Prescriptions } from "../schemas_mongoose"; 
 
 const create = async (
   payload: PrescriptionCreate,
   idAppointment: string,
   role: string
-): Promise<Prescriptions> => {
+): Promise<any> => {
 
   if (role !== "Doctor") {
     throw new AppError("Insufficient permissions", 403);
   }
-  
-  const appointmentId = Number(idAppointment);
+    if (!mongoose.Types.ObjectId.isValid(idAppointment)) {
+      throw new AppError("Invalid user ID", 400);
+    }
+  const appointmentId = idAppointment;
 
-  const appointmentExists = await prisma.appointments.findUnique({
-    where: { id: appointmentId },
-  });
+  const appointmentExists = await Appointments.findById(appointmentId);
 
   if (!appointmentExists) {
     throw new AppError("Appointment not found", 404);
@@ -30,34 +30,33 @@ const create = async (
     instructions: payload.instructions || null,
   };
 
-  const prescription = await prisma.prescriptions.create({
-    data: prescriptionData,
-  });
+  const prescription = new Prescriptions(prescriptionData);
+  await prescription.save();
 
   return prescription;
 };
 
-const read = async (idAppointment: string): Promise<Prescriptions[]> => {
-  const appointmentId = Number(idAppointment);
-
-  const appointmentExists = prisma.appointments.findUnique({
-    where: { id: appointmentId },
-  });
+const read = async (idAppointment: string): Promise<any[]> => {
+  const appointmentExists = await Appointments.findById(idAppointment);
   if (!appointmentExists) {
-    throw new AppError("Appoitment not found", 404);
+    throw new AppError("Appointment not found", 404);
   }
 
-  return await prisma.prescriptions.findMany({
-    where: {
-      appointmentId: appointmentId,
-    },
+  const prescriptions = await Prescriptions.find({
+    appointmentId: idAppointment,
   });
+
+  return prescriptions;
 };
 
-const destroy = async (prescriptionId: number): Promise<void> => {
-  await prisma.prescriptions.delete({
-    where: { id: prescriptionId },
-  });
+const destroy = async (prescriptionId: string): Promise<void> => {
+  const prescription = await Prescriptions.findByIdAndDelete(prescriptionId);
+
+  if (!prescription) {
+    throw new AppError("Prescription not found", 404);
+  }
+
+  return;
 };
 
 export default { create, read, destroy };

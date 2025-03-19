@@ -22,11 +22,11 @@ const read = async (req: Request, res: Response): Promise<void> => {
 
 const readOne = async (req: Request, res: Response): Promise<void> => {
   const attendanceId: string = req.params.id;
-  const attendance = await attendanceServices.readOne(Number(attendanceId));
+  const attendance = await attendanceServices.readOne(attendanceId);
   res.status(200).json(attendance);
 };
 const getUserAttendances = async (req: Request, res: Response): Promise<void> => {
-  const userId: number = Number(req.params.id) ;
+  const userId = req.params.id ;
   const attendances = await attendanceServices.getUserAttendances(userId);
   res.status(200).json(attendances);
 };

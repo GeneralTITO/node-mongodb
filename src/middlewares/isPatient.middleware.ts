@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { AppError } from "../errors";
-import { prisma } from "../prismaClient";
+import { User } from "../schemas_mongoose";
+import mongoose from "mongoose";
 
 export const isPatient = async (
   req: Request,
@@ -9,19 +10,23 @@ export const isPatient = async (
 ): Promise<void> => {
   const id: string = req.params.id;
 
-  const idNumber: number = Number(id);
   if (!id) return next();
 
-  try {
-    const foundUser = await prisma.user.findUnique({
-      where: { id: idNumber },
-    });
-    if (!foundUser) {
-      throw new AppError("Email already exists", 409);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new AppError("Invalid user ID", 400);
     }
 
-    if (foundUser.role != "Patient") {
-        throw new AppError("Staff/Doctor cant be patched in this route", 409);
+
+
+  try {
+    const foundUser = await User.findById(id);
+
+    if (!foundUser) {
+      throw new AppError("User not found", 404);
+    }
+
+    if (foundUser.role !== "Patient") {
+      throw new AppError("Staff/Doctor can't be patched in this route", 403);
     }
 
     return next();

@@ -6,7 +6,7 @@ interface IAppointments extends Document {
   appointmentDate: Date;
   diagnosis?: string;
   notes?: string;
-  prescriptions: mongoose.Types.ObjectId[];  // Referência para Prescriptions
+  prescriptions: mongoose.Types.ObjectId[]; 
 }
 
 const appointmentSchema = new Schema<IAppointments>({

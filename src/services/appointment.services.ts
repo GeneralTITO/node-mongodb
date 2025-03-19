@@ -1,46 +1,43 @@
-import { Appointments } from "@prisma/client";
 import { AppointmentCreate } from "../interfaces";
-import { prisma, redisClient } from "../prismaClient";
 import { AppError } from "../errors";
-import { promisify } from "util";
+import { Appointments, User } from "../schemas_mongoose";
+import { redisClient } from "../mongodbClient";
+import mongoose from "mongoose";
+ 
 
 const create = async (
   payload: AppointmentCreate,
   idStaff: string,
   idUser: string,
   role: string
-): Promise<Appointments> => {
+): Promise<any> => {
   if (role !== "Doctor") {
     throw new AppError("Insufficient permissions", 403);
   }
 
-  if (!idStaff || !idUser) {
-    throw new AppError(
-      "Both patient and employee must be provided with valid IDs",
-      400
-    );
+  if (!mongoose.Types.ObjectId.isValid(idStaff)) {
+    throw new AppError("Invalid staff ID", 400);
+  }
+  if (!mongoose.Types.ObjectId.isValid(idUser)) {
+    throw new AppError("Invalid user ID", 400);
   }
 
-  const numberIdStaff = Number(idStaff);
-  const numberIdUser = Number(idUser);
+  const staffId = idStaff;
+  const userId = idUser;
 
-  const employeeExists = await prisma.user.findUnique({
-    where: { id: numberIdStaff },
-  });
+  const employeeExists = await User.findById(staffId);
   if (!employeeExists) {
     throw new AppError("Employee not found", 404);
   }
 
-  const patientExists = await prisma.user.findUnique({
-    where: { id: numberIdUser },
-  });
+  const patientExists = await User.findById(userId);
   if (!patientExists) {
     throw new AppError("Patient not found", 404);
   }
 
-  const appointmentData: any = {
-    patientId: numberIdUser,
-    employeeId: numberIdStaff,
+  const appointmentData = {
+    patientId: userId,
+    employeeId: staffId,
     appointmentDate:
       typeof payload.appointmentDate === "string"
         ? new Date(payload.appointmentDate)
@@ -49,70 +46,64 @@ const create = async (
     notes: payload.notes,
   };
 
-  const appointment = await prisma.appointments.create({
-    data: appointmentData,
-  });
+  const appointment = new Appointments(appointmentData);
+  await appointment.save();
 
   return appointment;
 };
 
-const read = async (): Promise<Appointments[]> => {
-
-
+const read = async (): Promise<any[]> => {
   try {
     const cachedData = await redisClient.get("appointments");
-    
+
     if (cachedData) {
       console.log("Cache hit");
       return JSON.parse(cachedData);
     }
-    
-    const appointments = await prisma.appointments.findMany();
+
+    const appointments = await Appointments.find();
     console.log("Cache miss");
-    await redisClient.set("appointments", JSON.stringify(appointments), "EX", 3600);
-    
+
+    await redisClient.set(
+      "appointments",
+      JSON.stringify(appointments),
+      "EX",
+      3600
+    );
+
     return appointments;
   } catch (err) {
-    console.error("Erro ao buscar appointments:", err);
-    return await prisma.appointments.findMany();
+    console.error("Error fetching appointments:", err);
+    return await Appointments.find();
   }
 };
 
-const readOne = async (appointmentId: number): Promise<any> => {
-  const appointment = await prisma.appointments.findUnique({
-    where: { id: appointmentId },
-  });
+const readOne = async (appointmentId: string): Promise<any> => {
+  const appointment = await Appointments.findById(appointmentId);
   return appointment;
 };
 
-const getUserAppointments = async (userId: number): Promise<Appointments[]> => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
-
+const getUserAppointments = async (userId: string): Promise<any[]> => {
+  const user = await User.findById(userId);
   if (!user) {
     throw new AppError("User not found", 404);
   }
 
-  const appointments = await prisma.appointments.findMany({
-    where: {
-      OR: [{ patientId: userId }, { employeeId: userId }],
-    },
-    include: {
-      prescriptions: true,
-    },
-    orderBy: {
-      appointmentDate: "desc",
-    },
-  });
+  const appointments = await Appointments.find({
+    $or: [{ patientId: userId }, { employeeId: userId }],
+  })
+    .populate("prescriptions") 
+    .sort({ appointmentDate: -1 }); 
 
   return appointments;
 };
 
-const destroy = async (appointmentId: number): Promise<void> => {
-  await prisma.appointments.delete({
-    where: { id: appointmentId },
-  });
+const destroy = async (appointmentId: string): Promise<void> => {
+  const appointment = await Appointments.findByIdAndDelete(appointmentId);
+
+  if (!appointment) {
+    throw new AppError("Appointment not found", 404);
+  }
 };
 
 export default { create, read, destroy, readOne, getUserAppointments };

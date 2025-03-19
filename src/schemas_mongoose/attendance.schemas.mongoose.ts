@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-// Enum UrgencyLevel
 export enum UrgencyLevel {
   Low = 'Low',
   Medium = 'Medium',

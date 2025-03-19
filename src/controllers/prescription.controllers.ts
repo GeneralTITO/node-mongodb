@@ -19,7 +19,8 @@ const read = async (req: Request, res: Response): Promise<void> => {
 };
 
 const destroy = async (req: Request, res: Response): Promise<void> => {
-  await presciptionServices.destroy(res.locals.foundEntity.id);
+  const prescriptionId = res.locals.foundEntity.id;
+  await presciptionServices.destroy(prescriptionId);
   res.status(204).send();
 };
 

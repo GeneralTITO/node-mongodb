@@ -1,7 +1,7 @@
 import { Router } from "express";
 import middlewares from "../middlewares";
-import { sessionSchema } from "../schemas_zod";
 import { sessionControllers } from "../controllers";
+import { sessionSchema } from "../schemas_zod";
 
 export const sessionRouter: Router = Router();
 

@@ -1,9 +1,11 @@
 import "dotenv/config";
 import app from "./app";
-import { prisma } from "./prismaClient";
+import connectToDatabase from "./mongodbClient";
 
 const PORT: number = Number(process.env.PORT) || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+connectToDatabase().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
 });

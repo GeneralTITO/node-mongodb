@@ -1,8 +1,11 @@
 import { z } from "zod";
 import { UrgencyLevelSchema } from "./urgencyLevel.schemas";
+const objectIdSchema = z.string().refine((id) => /^[0-9a-fA-F]{24}$/.test(id), {
+  message: "Invalid MongoDB ObjectId",
+});
 
 const AttendanceSchema = z.object({
-  id: z.number().int().positive(),
+  id: objectIdSchema,
   patientId: z.number().int().positive(),
   employeeId: z.number().int().positive(),
   urgencyLevel: UrgencyLevelSchema,

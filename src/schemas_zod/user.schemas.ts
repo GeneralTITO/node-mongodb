@@ -1,9 +1,11 @@
 import { z } from "zod";
-
+const objectIdSchema = z.string().refine((id) => /^[0-9a-fA-F]{24}$/.test(id), {
+  message: "Invalid MongoDB ObjectId",
+});
 const RoleSchema = z.enum(["Doctor", "Staff", "Patient"]);
 
 const UserSchema = z.object({
-  id: z.number().int().positive(),
+  id: objectIdSchema,
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   dateOfBirth: z.date().or(z.string()),

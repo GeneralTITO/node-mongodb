@@ -10,6 +10,7 @@ export const isStaffOrDoctor = (
   if (role == "Staff" || role == "Doctor") {
     res.locals.role = role;
   }
+  console.log(role);
   if (role == "Patient") {
     throw new AppError("Insufficient permissions", 403);
   }

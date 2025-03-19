@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const AppointmentSchema = z.object({
-  id: z.number().int().positive(),
+  id: z.string(),
   patientId: z.number().int().positive(),
   employeeId: z.number().int().positive(),
   appointmentDate: z.date().or(z.string()),
