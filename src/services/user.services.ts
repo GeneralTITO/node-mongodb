@@ -4,7 +4,7 @@ import { prisma } from "../prismaClient";
 import {
   ArrayUserReturnSchema,
   UserReturnSchema,
-} from "../schemas/user.schemas";
+} from "../schemas_zod/user.schemas";
 
 const create = async (payload: UserCreate): Promise<UserReturn> => {
   let formattedPayload = { ...payload };
@@ -63,7 +63,6 @@ const destroy = async (userId: number): Promise<void> => {
 };
 
 const searchByName = async (name: string): Promise<UserReturn[]> => {
-
   const users = await prisma.user.findMany({
     where: {
       OR: [
