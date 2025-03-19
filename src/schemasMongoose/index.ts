@@ -21,6 +21,13 @@ const UserSchema = new Schema({
   attendancesPatient: [{ type: Schema.Types.ObjectId, ref: 'Attendances' }],
   attendancesEmployee: [{ type: Schema.Types.ObjectId, ref: 'Attendances' }]
 });
+UserSchema.set('toJSON', {
+  transform: (doc, ret, options) => {
+    delete ret.password;
+    delete ret.resetToken;
+    return ret;
+  }
+});
 
 const SessionSchema = new Schema({
   email: { type: String, required: true },

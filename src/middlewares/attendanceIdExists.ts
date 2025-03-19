@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { prisma } from "../prismaClient";
+import { Attendance } from "../schemasMongoose";
 import { AppError } from "../errors";
 
 export const attendanceIdExists = async (
@@ -7,11 +7,9 @@ export const attendanceIdExists = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const id: number = Number(req.params.id);
+  const id: string = req.params.id;
 
-  const foundEntity = await prisma.attendances.findUnique({
-    where: { id },
-  });
+  const foundEntity = await Attendance.findById(id);
 
   if (!foundEntity) {
     throw new AppError("Attendance not found", 404);

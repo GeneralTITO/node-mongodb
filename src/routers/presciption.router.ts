@@ -1,6 +1,5 @@
 import { Router } from "express";
 import middlewares from "../middlewares";
-import { PrescriptionCreateSchema } from "../schemasMongoose";
 import { prescriptionControllers } from "../controllers";
 
 export const presciptionRouter: Router = Router();
@@ -19,6 +18,5 @@ presciptionRouter.delete(
 presciptionRouter.post(
   "/:idAppointment",
   middlewares.verifyToken,
-  middlewares.validateBody(PrescriptionCreateSchema),
   prescriptionControllers.create
 );

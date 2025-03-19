@@ -1,7 +1,6 @@
 import { Router } from "express";
 import middlewares from "../middlewares";
 import { attendanceControllers } from "../controllers";
-import { AttendanceCreateSchema } from "../schemasMongoose";
 
 export const attendanceRouter: Router = Router();
 
@@ -28,6 +27,5 @@ attendanceRouter.delete(
 attendanceRouter.post(
   "/:idStaff/:idUser",
   middlewares.verifyToken,
-  middlewares.validateBody(AttendanceCreateSchema),
   attendanceControllers.create
 );

@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
+import { User } from "../schemasMongoose";
 import { AppError } from "../errors";
-import { prisma } from "../prismaClient";
-
 
 export const uniqueEmail = async (
   req: Request,
@@ -13,9 +12,7 @@ export const uniqueEmail = async (
   if (!email) return next();
 
   try {
-    const foundUser = await prisma.user.findUnique({
-      where: { email }
-    });
+    const foundUser = await User.findOne({ email });
 
     if (foundUser) {
       throw new AppError("Email already exists", 409);

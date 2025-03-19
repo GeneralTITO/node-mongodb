@@ -1,6 +1,5 @@
 import { Router } from "express";
 import middlewares from "../middlewares";
-import { AppointmentCreateSchema } from "../schemasMongoose";
 import { appointmentControllers } from "../controllers";
 
 export const appointmentRouter: Router = Router();
@@ -32,6 +31,5 @@ appointmentRouter.delete(
 appointmentRouter.post(
   "/:idStaff/:idUser",
   middlewares.verifyToken,
-  middlewares.validateBody(AppointmentCreateSchema),
   appointmentControllers.create
 );

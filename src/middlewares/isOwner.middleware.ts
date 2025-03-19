@@ -6,12 +6,12 @@ export const isOwner = (
   res: Response,
   next: NextFunction
 ): void => {
-    const { sub } = res.locals.decoded;
-    const { id } = req.params;
-  
-    if (Number(sub) !== Number(id)) {
-      throw new AppError("Insufficient permissions", 403);
-    }
-  
-    return next();
-  };
+  const { sub } = res.locals.decoded;
+  const { id } = req.params;
+
+  if (Number(sub) !== Number(id)) {
+    throw new AppError("Insufficient permissions", 403);
+  }
+
+  return next();
+};
