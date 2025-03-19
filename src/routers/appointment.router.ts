@@ -1,11 +1,15 @@
 import { Router } from "express";
 import middlewares from "../middlewares";
-import { AppointmentCreateSchema } from "../schemas";
+import { AppointmentCreateSchema } from "../schemasMongoose";
 import { appointmentControllers } from "../controllers";
 
 export const appointmentRouter: Router = Router();
 
-appointmentRouter.get("/", middlewares.verifyToken, appointmentControllers.read);
+appointmentRouter.get(
+  "/",
+  middlewares.verifyToken,
+  appointmentControllers.read
+);
 appointmentRouter.get(
   "/getUserAppointments/:id",
   middlewares.verifyToken,

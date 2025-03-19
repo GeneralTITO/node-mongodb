@@ -1,6 +1,6 @@
 import { Router } from "express";
 import middlewares from "../middlewares";
-import { sessionSchema } from "../schemas";
+import { sessionSchema } from "../schemasMongoose";
 import { sessionControllers } from "../controllers";
 
 export const sessionRouter: Router = Router();

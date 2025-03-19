@@ -1,7 +1,7 @@
 import { Router } from "express";
 import middlewares from "../middlewares";
 import { attendanceControllers } from "../controllers";
-import { AttendanceCreateSchema } from "../schemas";
+import { AttendanceCreateSchema } from "../schemasMongoose";
 
 export const attendanceRouter: Router = Router();
 

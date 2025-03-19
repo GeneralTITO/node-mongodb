@@ -1,14 +1,14 @@
-import { Attendances } from "@prisma/client";
-import { AttendanceCreate } from "../interfaces";
-import { prisma } from "../prismaClient";
+import { AttendanceCreate, AttendanceReturn } from "../interfaces";
 import { AppError } from "../errors";
+import { Attendance as AttendanceModel } from "../schemasMongoose";
+import { User as UserModel } from "../schemasMongoose";
 
 const create = async (
   payload: AttendanceCreate,
   idStaff: string,
   idUser: string,
   role: string
-): Promise<Attendances> => {
+): Promise<AttendanceReturn> => {
   if (role !== "Staff") {
     throw new AppError("Insufficient permissions", 403);
   }
@@ -19,89 +19,62 @@ const create = async (
       400
     );
   }
-  const numberIdStaff = Number(idStaff);
-  const numberIdUser = Number(idUser);
 
-  const employeeExists = await prisma.user.findUnique({
-    where: { id: numberIdStaff },
-  });
+  const employeeExists = await UserModel.findById(idStaff);
   if (!employeeExists) {
     throw new AppError("Employee not found", 404);
   }
 
-  const patientExists = await prisma.user.findUnique({
-    where: { id: numberIdUser },
-  });
+  const patientExists = await UserModel.findById(idUser);
   if (!patientExists) {
     throw new AppError("Patient not found", 404);
   }
 
-  const attendanceData: any = {
-    patientsId: numberIdUser,
-    employeeId: numberIdStaff,
+  const attendanceData = {
+    patientsId: idUser,
+    employeeId: idStaff,
     urgencyLevel: payload.urgencyLevel,
     observations: payload.observations,
   };
 
-  const attendance = await prisma.attendances.create({
-    data: attendanceData,
-  });
+  const attendance = await AttendanceModel.create(attendanceData);
 
-  return attendance;
+  return attendance.toObject() as AttendanceReturn;
 };
 
-const read = async (): Promise<Attendances[]> => {
-  return await prisma.attendances.findMany();
+const read = async (): Promise<AttendanceReturn[]> => {
+  const attendances = await AttendanceModel.find();
+  return attendances.map(attendance => attendance.toObject() as AttendanceReturn);
 };
 
-const readOne = async (attendanceId: number): Promise<any> => {
-  const attendance = await prisma.attendances.findUnique({
-    where: { id: attendanceId },
-  });
-  return attendance;
+const readOne = async (attendanceId: string): Promise<AttendanceReturn> => {
+  const attendance = await AttendanceModel.findById(attendanceId);
+  if (!attendance) {
+    throw new AppError("Attendance not found", 404);
+  }
+  return attendance.toObject() as AttendanceReturn;
 };
-const getUserAttendances = async (userId: number): Promise<Attendances[]> => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
+
+const getUserAttendances = async (userId: string): Promise<AttendanceReturn[]> => {
+  const user = await UserModel.findById(userId);
 
   if (!user) {
     throw new AppError("User not found", 404);
   }
 
-  const attendances = await prisma.attendances.findMany({
-    where: {
-      OR: [{ patientsId: userId }, { employeeId: userId }],
-    },
-    // include: {
-    //   patient: {
-    //     select: {
-    //       id: true,
-    //       firstName: true,
-    //       lastName: true,
-    //       email: true,
-    //       role: true,
-    //     },
-    //   },
-    //   employee: {
-    //     select: {
-    //       id: true,
-    //       firstName: true,
-    //       lastName: true,
-    //       email: true,
-    //       role: true,
-    //     },
-    //   },
-    // },
+  const attendances = await AttendanceModel.find({
+    $or: [{ patientsId: userId }, { employeeId: userId }],
   });
 
-  return attendances;
+  return attendances.map(attendance => attendance.toObject() as AttendanceReturn);
 };
 
-const destroy = async (attendanceId: number): Promise<void> => {
-  await prisma.attendances.delete({
-    where: { id: attendanceId },
-  });
+const destroy = async (attendanceId: string): Promise<void> => {
+  const result = await AttendanceModel.findByIdAndDelete(attendanceId);
+  
+  if (!result) {
+    throw new AppError("Attendance not found", 404);
+  }
 };
 
 export default { create, read, destroy, readOne, getUserAttendances };

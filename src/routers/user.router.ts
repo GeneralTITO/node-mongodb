@@ -4,7 +4,7 @@ import {
   SearchByNameSchema,
   UserCreateSchema,
   UserUpdateSchema,
-} from "../schemas";
+} from "../schemasMongoose";
 import { userControllers } from "../controllers";
 import { validateBody } from "../middlewares/validateBody.middleware";
 

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import userServices from "../services/user.services";
 import { UserReturn, UserUpdate } from "../interfaces";
-import { UserReturnSchema } from "../schemas";
+import { UserReturnSchema } from "../schemasMongoose";
 
 const create = async (req: Request, res: Response): Promise<void> => {
   const user = await userServices.create(req.body);
@@ -22,7 +22,7 @@ const update = async (req: Request, res: Response): Promise<void> => {
   const id: number = Number(req.params.id);
   const user = await userServices.update(req.body, id);
 
-  const response = UserReturnSchema.parse(user)
+  const response = UserReturnSchema.parse(user);
   res.status(200).json(response);
 };
 
@@ -31,11 +31,9 @@ const destroy = async (req: Request, res: Response): Promise<void> => {
   res.status(204).send();
 };
 const searchByName = async (req: Request, res: Response): Promise<void> => {
-  const name: string = req.body.name
+  const name: string = req.body.name;
   const users = await userServices.searchByName(name);
   res.status(200).json(users);
 };
 
-
-
-export default { create, read, destroy, update, readOne ,searchByName};
+export default { create, read, destroy, update, readOne, searchByName };

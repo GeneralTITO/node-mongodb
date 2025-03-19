@@ -1,10 +1,12 @@
 import { hashSync } from "bcryptjs";
-import { User, UserCreate, UserReturn, UserUpdate } from "../interfaces";
-import { prisma } from "../prismaClient";
-import {
-  ArrayUserReturnSchema,
-  UserReturnSchema,
-} from "../schemas/user.schemas";
+import { 
+  IUser, 
+  UserCreate, 
+  UserReturn, 
+  UserUpdate 
+} from "../interfaces";
+// Corrigindo a importação do modelo User
+import { User as UserModel } from "../schemasMongoose";
 
 const create = async (payload: UserCreate): Promise<UserReturn> => {
   let formattedPayload = { ...payload };
@@ -17,73 +19,77 @@ const create = async (payload: UserCreate): Promise<UserReturn> => {
     formattedPayload.password = hashSync(formattedPayload.password, 10);
   }
 
-  const user = await prisma.user.create({
-    data: formattedPayload,
-  });
-
-  return UserReturnSchema.parse(user);
+  const user = await UserModel.create(formattedPayload);
+  
+  // Converte o documento Mongoose para objeto JavaScript
+  const userObject = user.toObject();
+  
+  // Remove o campo password do objeto retornado
+  const { password, ...userReturn } = userObject;
+  
+  return userReturn as UserReturn;
 };
 
 const read = async (): Promise<UserReturn[]> => {
-  const users = await prisma.user.findMany();
-
-  return ArrayUserReturnSchema.parse(users);
+  const users = await UserModel.find().select('-password');
+  
+  return users.map(user => user.toObject() as UserReturn);
 };
 
-const readOne = async (userId: number): Promise<UserReturn> => {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  return user;
+const readOne = async (userId: string): Promise<UserReturn> => {
+  const user = await UserModel.findById(userId).select('-password');
+  
+  if (!user) {
+    throw new Error('User not found');
+  }
+  
+  return user.toObject() as UserReturn;
 };
+
 const update = async (
   payload: UserUpdate,
-  idUser: number
+  idUser: string
 ): Promise<UserReturn> => {
   let formattedPayload = { ...payload };
 
   if (typeof payload.dateOfBirth === "string") {
     formattedPayload.dateOfBirth = new Date(payload.dateOfBirth);
   }
-  const passwordString: any = formattedPayload.password;
 
   if (formattedPayload.password) {
-    formattedPayload.password = hashSync(passwordString, 10);
+    formattedPayload.password = hashSync(formattedPayload.password, 10);
   }
-  const userUpdated = await prisma.user.update({
-    where: { id: idUser },
-    data: { ...formattedPayload },
-  });
-
-  return userUpdated;
+  
+  const userUpdated = await UserModel.findByIdAndUpdate(
+    idUser,
+    formattedPayload,
+    { new: true }
+  ).select('-password');
+  
+  if (!userUpdated) {
+    throw new Error('User not found');
+  }
+  
+  return userUpdated.toObject() as UserReturn;
 };
 
-const destroy = async (userId: number): Promise<void> => {
-  await prisma.user.delete({
-    where: { id: userId },
-  });
+const destroy = async (userId: string): Promise<void> => {
+  const result = await UserModel.findByIdAndDelete(userId);
+  
+  if (!result) {
+    throw new Error('User not found');
+  }
 };
 
 const searchByName = async (name: string): Promise<UserReturn[]> => {
-
-  const users = await prisma.user.findMany({
-    where: {
-      OR: [
-        {
-          firstName: {
-            contains: name,
-            mode: "insensitive",
-          },
-        },
-        {
-          lastName: {
-            contains: name,
-            mode: "insensitive",
-          },
-        },
-      ],
-    },
-  });
-
-  return ArrayUserReturnSchema.parse(users);
+  const users = await UserModel.find({
+    $or: [
+      { firstName: { $regex: name, $options: 'i' } },
+      { lastName: { $regex: name, $options: 'i' } }
+    ]
+  }).select('-password');
+  
+  return users.map(user => user.toObject() as UserReturn);
 };
 
 export default { create, read, destroy, readOne, update, searchByName };
