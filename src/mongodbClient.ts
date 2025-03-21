@@ -3,7 +3,18 @@ import "dotenv/config";
 import Redis from "ioredis";
 
 
-export const redisClient = Redis.createClient();
+export const redisClient = new Redis({
+  host: process.env.REDIS_HOST || 'redis', 
+  port: parseInt(process.env.REDIS_PORT || '6379'),
+});
+
+redisClient.on('error', (err) => {
+  console.error('Redis connection error:', err);
+});
+
+redisClient.on('connect', () => {
+  console.log('Redis connected successfully');
+});
 
 
 
